@@ -1,167 +1,233 @@
-# FCOWEHCI-UWJ<!doctype html>
-<html lang="zh-Hant">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#102743">
-  <title>待辦清單</title>
-  <link rel="stylesheet" href="./style.css">
-  <script src="./app.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern To-Do List</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for crisp icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f3e7e9 0%, #e3eeff 99%, #e3eeff 100%);
+        }
+        
+        /* Custom scrollbar for the task list */
+        .task-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .task-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .task-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .task-item-enter {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        /* Custom Checkbox */
+        .custom-checkbox input:checked + div {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+        .custom-checkbox input:checked + div svg {
+            display: block;
+        }
+    </style>
 </head>
-<body>
-  <main class="app">
-    <header class="topbar">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">✓</span><span>待辦清單</span></div>
-      <span class="storage-note">儲存於這台裝置</span>
-    </header>
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <section class="workspace" aria-labelledby="page-title">
-      <div class="heading">
-        <div>
-          <p class="eyebrow" id="today"></p>
-          <h1 id="page-title">今天要完成什麼？</h1>
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[80vh] max-h-[600px]">
+        
+        <!-- Header -->
+        <div class="bg-indigo-600 p-6 text-white shadow-md relative z-10">
+            <h1 class="text-2xl font-bold tracking-tight mb-1">My Tasks</h1>
+            <p class="text-indigo-200 text-sm" id="task-counter">Loading tasks...</p>
         </div>
-        <div class="progress" aria-live="polite"><strong id="done-count">0</strong><span id="progress-label">/ 0 已完成</span></div>
-      </div>
 
-      <form id="add-form" class="add-form">
-        <label class="sr-only" for="new-task">新增待辦事項</label>
-        <span class="add-icon" aria-hidden="true">＋</span>
-        <input id="new-task" name="task" type="text" maxlength="160" placeholder="新增一件待辦事項…" autocomplete="off" required>
-        <button type="submit">新增</button>
-      </form>
-
-      <div class="list-toolbar">
-        <div class="filters" role="group" aria-label="篩選待辦事項">
-          <button type="button" data-filter="all" class="active" aria-pressed="true">全部</button>
-          <button type="button" data-filter="active" aria-pressed="false">未完成</button>
-          <button type="button" data-filter="done" aria-pressed="false">已完成</button>
+        <!-- Input Area -->
+        <div class="p-4 bg-gray-50 border-b border-gray-100">
+            <form id="todo-form" class="relative flex items-center">
+                <input 
+                    type="text" 
+                    id="todo-input" 
+                    placeholder="What needs to be done?" 
+                    class="w-full pl-4 pr-14 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm placeholder-gray-400 text-gray-700"
+                    autocomplete="off"
+                    required
+                >
+                <button 
+                    type="submit" 
+                    class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white w-9 h-9 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                    aria-label="Add task"
+                >
+                    <i class="fas fa-plus"></i>
+                </button>
+            </form>
         </div>
-        <span id="remaining-count" class="remaining">0 件待完成</span>
-      </div>
 
-      <ul id="task-list" class="task-list" aria-label="待辦事項"></ul>
-      <div id="empty-state" class="empty" hidden>
-        <div class="empty-icon" aria-hidden="true">✓</div>
-        <h2 id="empty-title">清單還是空的</h2>
-        <p id="empty-description">在上方輸入一件待辦事項，開始安排你的今天。</p>
-      </div>
+        <!-- Task List Container -->
+        <div class="flex-1 overflow-y-auto task-container bg-white relative">
+            <ul id="todo-list" class="divide-y divide-gray-100 flex flex-col">
+                <!-- Tasks will be dynamically inserted here via JS -->
+            </ul>
 
-      <footer class="list-footer">
-        <span>點選事項文字即可編輯</span>
-        <button id="clear-done" type="button" hidden>清除已完成</button>
-      </footer>
-    </section>
-  </main>
+            <!-- Empty State (Hidden by default) -->
+            <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center hidden pointer-events-none">
+                <div class="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-4 text-indigo-300">
+                    <i class="fas fa-clipboard-check text-4xl"></i>
+                </div>
+                <h3 class="text-gray-900 font-semibold mb-1">All caught up!</h3>
+                <p class="text-gray-500 text-sm">Add a task above to get started.</p>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const form = document.getElementById('todo-form');
+            const input = document.getElementById('todo-input');
+            const todoList = document.getElementById('todo-list');
+            const emptyState = document.getElementById('empty-state');
+            const taskCounter = document.getElementById('task-counter');
+
+            // State: Load from localStorage or initialize empty array
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+            // Save tasks to localStorage
+            const saveTasks = () => {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            };
+
+            // Update Header Counter
+            const updateCounter = () => {
+                const total = tasks.length;
+                const completed = tasks.filter(t => t.completed).length;
+                if (total === 0) {
+                    taskCounter.textContent = "No tasks yet";
+                } else if (completed === total) {
+                    taskCounter.textContent = "All tasks completed! 🎉";
+                } else {
+                    taskCounter.textContent = `${completed} of ${total} tasks completed`;
+                }
+            };
+
+            // Render tasks to the DOM
+            const renderTasks = () => {
+                // Clear current list
+                todoList.innerHTML = '';
+
+                // Handle Empty State Visibility
+                if (tasks.length === 0) {
+                    emptyState.classList.remove('hidden');
+                } else {
+                    emptyState.classList.add('hidden');
+                }
+
+                // Create DOM elements for each task
+                tasks.forEach(task => {
+                    const li = document.createElement('li');
+                    li.className = `group flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200 ${task.completed ? 'opacity-75' : ''}`;
+                    li.dataset.id = task.id;
+
+                    // HTML structure for a single task item
+                    li.innerHTML = `
+                        <label class="custom-checkbox flex items-center cursor-pointer flex-1 min-w-0">
+                            <input type="checkbox" class="sr-only" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
+                            <div class="w-6 h-6 rounded border-2 border-gray-300 mr-4 flex-shrink-0 flex items-center justify-center transition-colors bg-white hover:border-indigo-400">
+                                <svg class="w-4 h-4 text-white hidden pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <span class="text-gray-800 break-words flex-1 transition-all duration-300 ${task.completed ? 'line-through text-gray-400' : ''}">
+                                ${escapeHTML(task.text)}
+                            </span>
+                        </label>
+                        <button onclick="deleteTask(${task.id})" class="ml-4 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" aria-label="Delete task">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    `;
+                    todoList.appendChild(li);
+                });
+
+                updateCounter();
+            };
+
+            // Security: Escape HTML to prevent XSS
+            const escapeHTML = (str) => {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            };
+
+            // Add new task
+            const addTask = (e) => {
+                e.preventDefault();
+                const text = input.value.trim();
+                
+                if (text) {
+                    const newTask = {
+                        id: Date.now(), // Unique ID based on timestamp
+                        text: text,
+                        completed: false
+                    };
+                    
+                    // Add to beginning of array
+                    tasks.unshift(newTask);
+                    saveTasks();
+                    
+                    // Clear input and focus
+                    input.value = '';
+                    input.focus();
+                    
+                    renderTasks();
+                    
+                    // Add animation to the newly added item
+                    const firstItem = todoList.firstElementChild;
+                    if(firstItem) firstItem.classList.add('task-item-enter');
+                }
+            };
+
+            // Toggle task completion status
+            window.toggleTask = (id) => {
+                tasks = tasks.map(task => {
+                    if (task.id === id) {
+                        return { ...task, completed: !task.completed };
+                    }
+                    return task;
+                });
+                saveTasks();
+                renderTasks();
+            };
+
+            // Delete a task
+            window.deleteTask = (id) => {
+                tasks = tasks.filter(task => task.id !== id);
+                saveTasks();
+                renderTasks();
+            };
+
+            // Event Listeners
+            form.addEventListener('submit', addTask);
+
+            // Initial Render
+            renderTasks();
+        });
+    </script>
 </body>
 </html>
-:root{font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;color:#172b41;background:#edf2f7;font-synthesis:none}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(#102743 0 280px,#edf2f7 280px)}button,input{font:inherit}button{cursor:pointer}.app{max-width:960px;margin:auto;padding:0 28px 70px}.topbar{height:100px;display:flex;align-items:center;justify-content:space-between;color:#fff}.brand{display:flex;align-items:center;gap:11px;font-size:1.15rem;font-weight:750;letter-spacing:.03em}.brand-mark{display:grid;place-items:center;width:33px;height:33px;border-radius:10px;background:#78d8c5;color:#102743;font-size:1.2rem}.storage-note{color:#b9cbdc;font-size:.88rem}.workspace{background:#fff;border-radius:20px;box-shadow:0 24px 65px rgba(15,37,61,.12);padding:44px 46px 24px}.heading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:30px}.eyebrow{margin:0 0 8px;font-size:.89rem;font-weight:700;color:#58758e;letter-spacing:.07em}h1{margin:0;font-size:clamp(1.65rem,4vw,2.2rem);line-height:1.25;letter-spacing:-.035em}.progress{white-space:nowrap;color:#627990;padding-bottom:3px}.progress strong{color:#168779;font-size:1.7rem}.progress span{font-size:.9rem}.add-form{display:flex;align-items:center;gap:12px;padding:7px 7px 7px 19px;border:2px solid #dbe5ed;border-radius:13px;transition:border-color .2s,box-shadow .2s}.add-form:focus-within{border-color:#168f81;box-shadow:0 0 0 4px rgba(22,143,129,.1)}.add-icon{font-size:1.5rem;color:#168779;line-height:1}.add-form input{flex:1;min-width:0;border:0;outline:0;font-size:1rem;padding:12px 0;color:#172b41}.add-form input::placeholder{color:#8293a4}.add-form button{background:#0e766b;color:#fff;border:0;border-radius:9px;padding:12px 22px;font-weight:700}.add-form button:hover{background:#095d55}.list-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #e7edf2;margin-top:31px}.filters{display:flex;gap:26px}.filters button{color:#718599;background:none;border:0;border-bottom:3px solid transparent;padding:0 2px 13px;font-weight:650;white-space:nowrap}.filters button.active{color:#0b786c;border-color:#0b786c}.filters button:hover{color:#0b786c}.remaining{font-size:.88rem;color:#718599;padding-bottom:13px;white-space:nowrap}.task-list{list-style:none;margin:0;padding:0;min-height:170px}.task-item{display:flex;align-items:center;gap:15px;min-height:69px;padding:12px 3px;border-bottom:1px solid #edf1f5}.task-check{appearance:none;width:23px;height:23px;flex:none;border:2px solid #a7b9c6;border-radius:7px;display:grid;place-items:center;margin:0;cursor:pointer}.task-check:checked{background:#0e766b;border-color:#0e766b}.task-check:checked::after{content:"✓";font-size:15px;line-height:1;color:white;font-weight:800}.task-text{flex:1;min-width:0;text-align:left;border:0;background:transparent;color:#20344b;padding:9px 0;font-size:1rem;line-height:1.45;overflow-wrap:anywhere}.task-item.done .task-text{text-decoration:line-through;color:#91a0ad}.task-text:hover{color:#0b786c}.task-actions{display:flex;align-items:center;gap:5px}.icon-button{border:0;background:transparent;color:#758a9c;border-radius:8px;width:37px;height:37px;font-size:1.35rem}.icon-button:hover{background:#edf4f5;color:#0b786c}.icon-button.delete:hover{background:#fff0ee;color:#bf4e45}.edit-input{flex:1;min-width:0;padding:10px 12px;border:2px solid #168f81;border-radius:8px;outline:none}.empty{text-align:center;padding:34px 15px 55px;color:#778ba0}.empty-icon{width:55px;height:55px;display:grid;place-items:center;border-radius:16px;background:#e4f4f1;color:#0e766b;margin:0 auto 15px;font-size:1.7rem}.empty h2{font-size:1.08rem;color:#30475c;margin:0 0 7px}.empty p{margin:0;line-height:1.6}.list-footer{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:19px;color:#899aa9;font-size:.85rem}.list-footer button{border:0;background:none;color:#537185;padding:6px 0}.list-footer button:hover{text-decoration:underline;color:#0b786c}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}:focus-visible{outline:3px solid #26aa98;outline-offset:3px}@media(max-width:600px){body{background:linear-gradient(#102743 0 224px,#edf2f7 224px)}.app{padding:0 15px 40px}.topbar{height:78px}.workspace{padding:27px 19px 20px;border-radius:16px}.heading{align-items:flex-start;margin-bottom:25px}.progress{display:flex;align-items:baseline;gap:3px;padding-top:20px}.progress strong{font-size:1.4rem}.progress span{font-size:.75rem}.filters{gap:16px}.filters button{font-size:.9rem}.remaining{font-size:.76rem}.storage-note{font-size:.78rem}.list-footer{font-size:.78rem}}@media(max-width:370px){.remaining{display:none}.heading{flex-wrap:wrap;gap:4px}.progress{padding:0}} 
-(() => {
-  'use strict';
-  const KEY = 'todo-list-v1';
-  const form = document.querySelector('#add-form');
-  const input = document.querySelector('#new-task');
-  const list = document.querySelector('#task-list');
-  const empty = document.querySelector('#empty-state');
-  const filters = document.querySelector('.filters');
-  const clearDone = document.querySelector('#clear-done');
-  let filter = 'all';
-  let tasks = load();
-
-  function load() {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(KEY) || '[]');
-      return Array.isArray(parsed) ? parsed.filter(t => t && typeof t.id === 'string' && typeof t.text === 'string' && typeof t.done === 'boolean') : [];
-    } catch { return []; }
-  }
-  function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(tasks)); }
-    catch { /* Browser storage may be disabled or full; keep the current session usable. */ }
-  }
-  function render() {
-    list.replaceChildren();
-    const visible = tasks.filter(t => filter === 'all' || (filter === 'done' ? t.done : !t.done));
-    const completed = tasks.filter(t => t.done).length;
-    document.querySelector('#done-count').textContent = completed;
-    document.querySelector('#progress-label').textContent = `/ ${tasks.length} 已完成`;
-    document.querySelector('#remaining-count').textContent = `${tasks.length - completed} 件待完成`;
-    clearDone.hidden = completed === 0;
-    empty.hidden = visible.length > 0;
-    list.hidden = visible.length === 0;
-    if (!visible.length) {
-      const messages = {
-        all: ['清單還是空的', '在上方輸入一件待辦事項，開始安排你的今天。'],
-        active: ['沒有未完成事項', '目前所有待辦事項都已完成。'],
-        done: ['還沒有已完成事項', '完成一件待辦後，就會顯示在這裡。']
-      };
-      document.querySelector('#empty-title').textContent = messages[filter][0];
-      document.querySelector('#empty-description').textContent = messages[filter][1];
-    }
-    for (const task of visible) {
-      const row = document.createElement('li');
-      row.className = `task-item${task.done ? ' done' : ''}`;
-      row.dataset.id = task.id;
-      const check = document.createElement('input');
-      check.type = 'checkbox'; check.className = 'task-check'; check.checked = task.done;
-      check.setAttribute('aria-label', `${task.done ? '標記未完成' : '標記完成'}：${task.text}`);
-      const title = document.createElement('button');
-      title.type = 'button'; title.className = 'task-text'; title.textContent = task.text;
-      title.setAttribute('aria-label', `編輯：${task.text}`);
-      const actions = document.createElement('div'); actions.className = 'task-actions';
-      const remove = document.createElement('button');
-      remove.type = 'button'; remove.className = 'icon-button delete'; remove.textContent = '×';
-      remove.setAttribute('aria-label', `刪除：${task.text}`);
-      actions.append(remove); row.append(check, title, actions); list.append(row);
-    }
-  }
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    const text = input.value.trim();
-    if (!text) return;
-    tasks.unshift({ id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, text, done: false });
-    input.value = ''; save(); render(); input.focus();
-  });
-  list.addEventListener('change', e => {
-    if (!e.target.matches('.task-check')) return;
-    const task = tasks.find(t => t.id === e.target.closest('li').dataset.id);
-    if (task) { task.done = e.target.checked; save(); render(); }
-  });
-  list.addEventListener('click', e => {
-    const row = e.target.closest('li'); if (!row) return;
-    const task = tasks.find(t => t.id === row.dataset.id); if (!task) return;
-    if (e.target.matches('.delete')) {
-      tasks = tasks.filter(t => t.id !== task.id); save(); render(); return;
-    }
-    if (!e.target.matches('.task-text')) return;
-    const editor = document.createElement('input');
-    editor.className = 'edit-input'; editor.type = 'text'; editor.maxLength = 160;
-    editor.value = task.text; editor.setAttribute('aria-label', '編輯待辦事項');
-    e.target.replaceWith(editor); editor.focus(); editor.select();
-    let finished = false;
-    const finish = (commit) => {
-      if (finished) return; finished = true;
-      const next = editor.value.trim();
-      if (commit && next) { task.text = next; save(); }
-      render();
-    };
-    editor.addEventListener('keydown', event => {
-      if (event.key === 'Enter') finish(true);
-      if (event.key === 'Escape') finish(false);
-    });
-    editor.addEventListener('blur', () => finish(true));
-  });
-  filters.addEventListener('click', e => {
-    const button = e.target.closest('button[data-filter]'); if (!button) return;
-    filter = button.dataset.filter;
-    filters.querySelectorAll('button').forEach(b => {
-      const selected = b === button; b.classList.toggle('active', selected);
-      b.setAttribute('aria-pressed', String(selected));
-    });
-    render();
-  });
-  clearDone.addEventListener('click', () => {
-    tasks = tasks.filter(t => !t.done); save(); render();
-  });
-  document.querySelector('#today').textContent = new Intl.DateTimeFormat('zh-TW', { dateStyle: 'full' }).format(new Date());
-  render();
-})();
