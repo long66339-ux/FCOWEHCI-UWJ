@@ -1,0 +1,57 @@
+# FCOWEHCI-UWJ<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102743">
+  <title>待辦清單</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">✓</span><span>待辦清單</span></div>
+      <span class="storage-note">儲存於這台裝置</span>
+    </header>
+
+    <section class="workspace" aria-labelledby="page-title">
+      <div class="heading">
+        <div>
+          <p class="eyebrow" id="today"></p>
+          <h1 id="page-title">今天要完成什麼？</h1>
+        </div>
+        <div class="progress" aria-live="polite"><strong id="done-count">0</strong><span id="progress-label">/ 0 已完成</span></div>
+      </div>
+
+      <form id="add-form" class="add-form">
+        <label class="sr-only" for="new-task">新增待辦事項</label>
+        <span class="add-icon" aria-hidden="true">＋</span>
+        <input id="new-task" name="task" type="text" maxlength="160" placeholder="新增一件待辦事項…" autocomplete="off" required>
+        <button type="submit">新增</button>
+      </form>
+
+      <div class="list-toolbar">
+        <div class="filters" role="group" aria-label="篩選待辦事項">
+          <button type="button" data-filter="all" class="active" aria-pressed="true">全部</button>
+          <button type="button" data-filter="active" aria-pressed="false">未完成</button>
+          <button type="button" data-filter="done" aria-pressed="false">已完成</button>
+        </div>
+        <span id="remaining-count" class="remaining">0 件待完成</span>
+      </div>
+
+      <ul id="task-list" class="task-list" aria-label="待辦事項"></ul>
+      <div id="empty-state" class="empty" hidden>
+        <div class="empty-icon" aria-hidden="true">✓</div>
+        <h2 id="empty-title">清單還是空的</h2>
+        <p id="empty-description">在上方輸入一件待辦事項，開始安排你的今天。</p>
+      </div>
+
+      <footer class="list-footer">
+        <span>點選事項文字即可編輯</span>
+        <button id="clear-done" type="button" hidden>清除已完成</button>
+      </footer>
+    </section>
+  </main>
+</body>
+</html>
