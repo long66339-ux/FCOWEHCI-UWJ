@@ -55,3 +55,113 @@
   </main>
 </body>
 </html>
+:root{font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;color:#172b41;background:#edf2f7;font-synthesis:none}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(#102743 0 280px,#edf2f7 280px)}button,input{font:inherit}button{cursor:pointer}.app{max-width:960px;margin:auto;padding:0 28px 70px}.topbar{height:100px;display:flex;align-items:center;justify-content:space-between;color:#fff}.brand{display:flex;align-items:center;gap:11px;font-size:1.15rem;font-weight:750;letter-spacing:.03em}.brand-mark{display:grid;place-items:center;width:33px;height:33px;border-radius:10px;background:#78d8c5;color:#102743;font-size:1.2rem}.storage-note{color:#b9cbdc;font-size:.88rem}.workspace{background:#fff;border-radius:20px;box-shadow:0 24px 65px rgba(15,37,61,.12);padding:44px 46px 24px}.heading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:30px}.eyebrow{margin:0 0 8px;font-size:.89rem;font-weight:700;color:#58758e;letter-spacing:.07em}h1{margin:0;font-size:clamp(1.65rem,4vw,2.2rem);line-height:1.25;letter-spacing:-.035em}.progress{white-space:nowrap;color:#627990;padding-bottom:3px}.progress strong{color:#168779;font-size:1.7rem}.progress span{font-size:.9rem}.add-form{display:flex;align-items:center;gap:12px;padding:7px 7px 7px 19px;border:2px solid #dbe5ed;border-radius:13px;transition:border-color .2s,box-shadow .2s}.add-form:focus-within{border-color:#168f81;box-shadow:0 0 0 4px rgba(22,143,129,.1)}.add-icon{font-size:1.5rem;color:#168779;line-height:1}.add-form input{flex:1;min-width:0;border:0;outline:0;font-size:1rem;padding:12px 0;color:#172b41}.add-form input::placeholder{color:#8293a4}.add-form button{background:#0e766b;color:#fff;border:0;border-radius:9px;padding:12px 22px;font-weight:700}.add-form button:hover{background:#095d55}.list-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #e7edf2;margin-top:31px}.filters{display:flex;gap:26px}.filters button{color:#718599;background:none;border:0;border-bottom:3px solid transparent;padding:0 2px 13px;font-weight:650;white-space:nowrap}.filters button.active{color:#0b786c;border-color:#0b786c}.filters button:hover{color:#0b786c}.remaining{font-size:.88rem;color:#718599;padding-bottom:13px;white-space:nowrap}.task-list{list-style:none;margin:0;padding:0;min-height:170px}.task-item{display:flex;align-items:center;gap:15px;min-height:69px;padding:12px 3px;border-bottom:1px solid #edf1f5}.task-check{appearance:none;width:23px;height:23px;flex:none;border:2px solid #a7b9c6;border-radius:7px;display:grid;place-items:center;margin:0;cursor:pointer}.task-check:checked{background:#0e766b;border-color:#0e766b}.task-check:checked::after{content:"✓";font-size:15px;line-height:1;color:white;font-weight:800}.task-text{flex:1;min-width:0;text-align:left;border:0;background:transparent;color:#20344b;padding:9px 0;font-size:1rem;line-height:1.45;overflow-wrap:anywhere}.task-item.done .task-text{text-decoration:line-through;color:#91a0ad}.task-text:hover{color:#0b786c}.task-actions{display:flex;align-items:center;gap:5px}.icon-button{border:0;background:transparent;color:#758a9c;border-radius:8px;width:37px;height:37px;font-size:1.35rem}.icon-button:hover{background:#edf4f5;color:#0b786c}.icon-button.delete:hover{background:#fff0ee;color:#bf4e45}.edit-input{flex:1;min-width:0;padding:10px 12px;border:2px solid #168f81;border-radius:8px;outline:none}.empty{text-align:center;padding:34px 15px 55px;color:#778ba0}.empty-icon{width:55px;height:55px;display:grid;place-items:center;border-radius:16px;background:#e4f4f1;color:#0e766b;margin:0 auto 15px;font-size:1.7rem}.empty h2{font-size:1.08rem;color:#30475c;margin:0 0 7px}.empty p{margin:0;line-height:1.6}.list-footer{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:19px;color:#899aa9;font-size:.85rem}.list-footer button{border:0;background:none;color:#537185;padding:6px 0}.list-footer button:hover{text-decoration:underline;color:#0b786c}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}:focus-visible{outline:3px solid #26aa98;outline-offset:3px}@media(max-width:600px){body{background:linear-gradient(#102743 0 224px,#edf2f7 224px)}.app{padding:0 15px 40px}.topbar{height:78px}.workspace{padding:27px 19px 20px;border-radius:16px}.heading{align-items:flex-start;margin-bottom:25px}.progress{display:flex;align-items:baseline;gap:3px;padding-top:20px}.progress strong{font-size:1.4rem}.progress span{font-size:.75rem}.filters{gap:16px}.filters button{font-size:.9rem}.remaining{font-size:.76rem}.storage-note{font-size:.78rem}.list-footer{font-size:.78rem}}@media(max-width:370px){.remaining{display:none}.heading{flex-wrap:wrap;gap:4px}.progress{padding:0}} 
+(() => {
+  'use strict';
+  const KEY = 'todo-list-v1';
+  const form = document.querySelector('#add-form');
+  const input = document.querySelector('#new-task');
+  const list = document.querySelector('#task-list');
+  const empty = document.querySelector('#empty-state');
+  const filters = document.querySelector('.filters');
+  const clearDone = document.querySelector('#clear-done');
+  let filter = 'all';
+  let tasks = load();
+
+  function load() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(KEY) || '[]');
+      return Array.isArray(parsed) ? parsed.filter(t => t && typeof t.id === 'string' && typeof t.text === 'string' && typeof t.done === 'boolean') : [];
+    } catch { return []; }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(tasks)); }
+    catch { /* Browser storage may be disabled or full; keep the current session usable. */ }
+  }
+  function render() {
+    list.replaceChildren();
+    const visible = tasks.filter(t => filter === 'all' || (filter === 'done' ? t.done : !t.done));
+    const completed = tasks.filter(t => t.done).length;
+    document.querySelector('#done-count').textContent = completed;
+    document.querySelector('#progress-label').textContent = `/ ${tasks.length} 已完成`;
+    document.querySelector('#remaining-count').textContent = `${tasks.length - completed} 件待完成`;
+    clearDone.hidden = completed === 0;
+    empty.hidden = visible.length > 0;
+    list.hidden = visible.length === 0;
+    if (!visible.length) {
+      const messages = {
+        all: ['清單還是空的', '在上方輸入一件待辦事項，開始安排你的今天。'],
+        active: ['沒有未完成事項', '目前所有待辦事項都已完成。'],
+        done: ['還沒有已完成事項', '完成一件待辦後，就會顯示在這裡。']
+      };
+      document.querySelector('#empty-title').textContent = messages[filter][0];
+      document.querySelector('#empty-description').textContent = messages[filter][1];
+    }
+    for (const task of visible) {
+      const row = document.createElement('li');
+      row.className = `task-item${task.done ? ' done' : ''}`;
+      row.dataset.id = task.id;
+      const check = document.createElement('input');
+      check.type = 'checkbox'; check.className = 'task-check'; check.checked = task.done;
+      check.setAttribute('aria-label', `${task.done ? '標記未完成' : '標記完成'}：${task.text}`);
+      const title = document.createElement('button');
+      title.type = 'button'; title.className = 'task-text'; title.textContent = task.text;
+      title.setAttribute('aria-label', `編輯：${task.text}`);
+      const actions = document.createElement('div'); actions.className = 'task-actions';
+      const remove = document.createElement('button');
+      remove.type = 'button'; remove.className = 'icon-button delete'; remove.textContent = '×';
+      remove.setAttribute('aria-label', `刪除：${task.text}`);
+      actions.append(remove); row.append(check, title, actions); list.append(row);
+    }
+  }
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    tasks.unshift({ id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, text, done: false });
+    input.value = ''; save(); render(); input.focus();
+  });
+  list.addEventListener('change', e => {
+    if (!e.target.matches('.task-check')) return;
+    const task = tasks.find(t => t.id === e.target.closest('li').dataset.id);
+    if (task) { task.done = e.target.checked; save(); render(); }
+  });
+  list.addEventListener('click', e => {
+    const row = e.target.closest('li'); if (!row) return;
+    const task = tasks.find(t => t.id === row.dataset.id); if (!task) return;
+    if (e.target.matches('.delete')) {
+      tasks = tasks.filter(t => t.id !== task.id); save(); render(); return;
+    }
+    if (!e.target.matches('.task-text')) return;
+    const editor = document.createElement('input');
+    editor.className = 'edit-input'; editor.type = 'text'; editor.maxLength = 160;
+    editor.value = task.text; editor.setAttribute('aria-label', '編輯待辦事項');
+    e.target.replaceWith(editor); editor.focus(); editor.select();
+    let finished = false;
+    const finish = (commit) => {
+      if (finished) return; finished = true;
+      const next = editor.value.trim();
+      if (commit && next) { task.text = next; save(); }
+      render();
+    };
+    editor.addEventListener('keydown', event => {
+      if (event.key === 'Enter') finish(true);
+      if (event.key === 'Escape') finish(false);
+    });
+    editor.addEventListener('blur', () => finish(true));
+  });
+  filters.addEventListener('click', e => {
+    const button = e.target.closest('button[data-filter]'); if (!button) return;
+    filter = button.dataset.filter;
+    filters.querySelectorAll('button').forEach(b => {
+      const selected = b === button; b.classList.toggle('active', selected);
+      b.setAttribute('aria-pressed', String(selected));
+    });
+    render();
+  });
+  clearDone.addEventListener('click', () => {
+    tasks = tasks.filter(t => !t.done); save(); render();
+  });
+  document.querySelector('#today').textContent = new Intl.DateTimeFormat('zh-TW', { dateStyle: 'full' }).format(new Date());
+  render();
+})();
